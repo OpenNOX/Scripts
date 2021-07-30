@@ -1,5 +1,6 @@
-$InputCsvPath = "C:\Users\ckali\Desktop\Temp.csv"
-$OutputCsvPath = "C:\Users\ckali\Desktop\Temp_Out.csv"
+# Inputs
+$InputCsvPath = ""
+$OutputPath = ""
 $ColumnIndex = 0
 
 # Initialize current reader & skip header row
@@ -8,7 +9,7 @@ $currentReader.ReadLine() | Out-Null
 
 $currentLineCount = 1
 
-$writer = New-Object System.IO.StreamWriter $OutputCsvPath
+$writer = New-Object System.IO.StreamWriter $OutputPath
 
 while($true)
 {
