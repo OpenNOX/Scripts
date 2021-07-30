@@ -1,64 +1,38 @@
 # Inputs
+#     $InputCsvPath - File path to CSV file to be checked.
+#     $OutputPath - File path to results log file.
+#     $ColumnIndex - 0-based index of column to be checked.
 $InputCsvPath = ""
 $OutputPath = ""
 $ColumnIndex = 0
 
-# Initialize current reader & skip header row
-$currentReader = [System.IO.File]::OpenText($InputCsvPath)
-$currentReader.ReadLine() | Out-Null
+# Initialize reader & skip header row
+$reader = [System.IO.File]::OpenText($InputCsvPath)
+$reader.ReadLine() | Out-Null
 
-$currentLineCount = 1
-
-$writer = New-Object System.IO.StreamWriter $OutputPath
+$values = [System.Collections.ArrayList]@()
 
 while($true)
 {
-    ($currentLine = $currentReader.ReadLine()) | Out-Null
-    $currentLineCount += 1
+    ($line = $reader.ReadLine()) | Out-Null
 
-    # Break infinite loop when no more lines to read in $InputCsvPath
-    if ($null -eq $currentLine)
+    # Break infinite loop when no more lines to read in from $InputCsvPath.
+    if ($null -eq $line)
     {
         break
     }
 
-    $current = $currentLine.Split(',')[$ColumnIndex]
+    $value = $line.Split(',')[$ColumnIndex]
 
-    # Close duplicate reader if was open previously
-    if ($null -ne $duplicateReader)
+    if ($values.Contains($value))
     {
-        $duplicateReader.Close()
+        Write-Host("Duplicate Found! ($($value))")
+        $line | Out-File -FilePath $OutputPath -Append
     }
-
-    $duplicateReader = [System.IO.File]::OpenText($InputCsvPath)
-
-    # Have duplicate reader skip lines already passed in current reader
-    for ($i = 0; $i -lt $currentLineCount; $i += 1)
+    else
     {
-        $duplicateReader.ReadLine() | Out-Null
-    }
-
-    Write-Host("Checking for duplicates for $($current)")
-
-    while($true)
-    {
-        ($line = $duplicateReader.ReadLine()) | Out-Null
-
-        if ($null -eq $line)
-        {
-            break
-        }
-
-        $target = $line.Split(',')[$ColumnIndex]
-
-        if ($current -eq $target)
-        {
-            Write-Host("Duplicate has been located! ($($target))")
-            $writer.WriteLine($line)
-        }
+        $values.Add($value) | Out-Null
     }
 }
 
-$currentReader.Close()
-$duplicateReader.Close()
-$writer.Close()
+$reader.Close()
