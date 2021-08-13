@@ -11,6 +11,7 @@ $reader = [System.IO.File]::OpenText($InputCsvPath)
 $reader.ReadLine() | Out-Null
 
 $values = [System.Collections.ArrayList]@()
+$duplicateValues = @{}
 
 while($true)
 {
@@ -26,8 +27,13 @@ while($true)
 
     if ($values.Contains($value))
     {
-        Write-Host("Duplicate Found! ($($value))")
-        $line | Out-File -FilePath $OutputPath -Append
+        if ($duplicateValues.Contains($value) -eq $false)
+        {
+            $duplicateValues.Add($value) | Out-Null
+
+            Write-Host("New Duplicate Found! ($($value))")
+            $line | Out-File -FilePath $OutputPath -Append
+        }
     }
     else
     {
